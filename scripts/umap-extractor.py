@@ -30,7 +30,7 @@ config["tilelayer"] = properties["tilelayer"]
 config["tilelayer"]["attribution"] = re.sub(r'\[\[([^|]+)\|([^|]+)\]\]', r'<a href="\1" >\2</a>', config["tilelayer"]["attribution"])
 
 def normalize_name(name) :
-    return name.replace("/", "_").replace("-","").replace(" ","")
+    return name.replace("/", "_").replace("-","").replace(" ","").replace(".","")
 
 datadir = os.path.join(outdir,"data")
 if not os.path.exists(datadir) :
