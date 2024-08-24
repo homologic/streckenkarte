@@ -1,0 +1,21 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+#map {
+    width: 100%;
+    height: 100vh;
+}
+.legend {
+	background-color: #fff;
+	border-radius: 0.5em;
+	border: 2px solid grey;
+	padding: 0.5em;
+}
+.dot {
+	height: 1em;
+	width: 1em;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 0.7em;
+}
