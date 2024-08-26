@@ -30,3 +30,13 @@ The `strecken.pmtiles` file is best generated using the
 `mapbuilder.sh` script. Furthermore, exporting maps from umap is
 possible using the `umap-extractor.py` script, which takes care of
 exporting the data as well as the graphical style for each layer. 
+
+### Input Data
+
+The input data for `strecken.pmtiles` consists of a `data/` folder,
+with one subfolder for each layer. In each of these folders, the lines
+to be displayed on the map can be deposited in any format understood
+by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
+GeoJSON or gpx. 
+
+
