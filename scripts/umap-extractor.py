@@ -25,10 +25,13 @@ config = {}
 config["name"] = properties["name"]
 colors = {}
 config["layers"] = colors
-config["tilelayer"] = properties["tilelayer"]
 
-config["tilelayer"]["attribution"] = re.sub(r'\[\[([^|]+)\|([^|]+)\]\]', r'<a href="\1" >\2</a>', config["tilelayer"]["attribution"])
-
+if "tilelayer" in properties and properties['tilelayer'] != {} :
+    config["tilelayer"] = properties["tilelayer"]
+    config["tilelayer"]["attribution"] = re.sub(r'\[\[([^|]+)\|([^|]+)\]\]', r'<a href="\1" >\2</a>', config["tilelayer"]["attribution"])
+else :
+    config["tilelayer"] = { "attribution" : 'Map data ©  <a href="http://osm.org/copyright" >OpenStreetMap contributors</a>', "url_template" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" }
+    
 def normalize_name(name) :
     return name.replace("/", "_").replace("-","").replace(" ","").replace(".","")
 
