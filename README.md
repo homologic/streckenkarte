@@ -42,4 +42,20 @@ to be displayed on the map can be deposited in any format understood
 by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
 GeoJSON or gpx. 
 
+## Troubleshooting
+
+### My pmtiles file is huge (hundreds of megabytes)
+
+This may be caused due to metadata from the input geojson files being
+carried over into the tiles, leading to that metadata getting copied
+into every tile that has that feature, brouter is known to sometimes
+add unreasonable amounts of metadata to its exports. The metadata can
+be stripped by running
+
+```
+jq 'del( .features[] .properties )'
+```
+
+on the input file with excessive metadata. 
+
 
