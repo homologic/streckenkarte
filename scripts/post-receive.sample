@@ -1,0 +1,8 @@
+#!/bin/bash
+temp=$(mktemp -d)
+outdir=/var/www/html/$(basename $(pwd))
+mkdir -p $outdir
+git --work-tree=$temp --git-dir=$GIT_DIR checkout -f
+~/scripts/mapbuilder.sh $temp  $outdir
+cp $temp/layers.json $outdir
+rm -r $temp

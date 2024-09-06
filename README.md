@@ -31,6 +31,9 @@ The `strecken.pmtiles` file is best generated using the
 possible using the `umap-extractor.py` script, which takes care of
 exporting the data as well as the graphical style for each layer. 
 
+A sample git `post-receive` hook is provided to build and deploy the
+map when the map data is pushed.
+
 ### Input Data
 
 The input data for `strecken.pmtiles` consists of a `data/` folder,
