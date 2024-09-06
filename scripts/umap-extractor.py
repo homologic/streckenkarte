@@ -36,6 +36,8 @@ def normalize_name(name) :
     return name.replace("/", "_").replace("-","").replace(" ","").replace(".","")
 
 datadir = os.path.join(outdir,"data")
+if not os.path.exists(outdir) :
+    os.mkdir(outdir)
 if not os.path.exists(datadir) :
     os.mkdir(datadir)
 
