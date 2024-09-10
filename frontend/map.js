@@ -45,3 +45,12 @@ fetch("layers.json")
 				legend.addTo(map);
 				strecken.addTo(map);
 		})
+
+function resize() {
+	document.getElementById("map").style.height = window.innerHeight + 'px';
+}
+resize();
+window.addEventListener('resize', () => {
+	resize();
+});
+
