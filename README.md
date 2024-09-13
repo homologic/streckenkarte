@@ -96,6 +96,3 @@ jq 'del( .features[] .properties )'
 ```
 
 on the input file with excessive metadata. 
-
-
-b
