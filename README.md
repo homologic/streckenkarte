@@ -49,18 +49,18 @@ The metadata for the layers to be rendered is given by the
 `layers.json` file in the input directory. An example layers.json file
 is given below:
 
-```
+```json
 {
-		"name" : "My map", 
-		"tilelayer" : {
-				"attribution" : "Map data ©  <a href=\"http://osm.org/copyright\" >OpenStreetMap contributors</a>",
-				"url_template" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-		},
-		"layers": {
-				"tram": {"color": "red", "width": 1.5, "humanname": "Tram"},
-				"train": {"color": "blue", "width": 2, "humanname": "Train"}
-		},
-		"maxZoom": 12
+	"name" : "My map", 
+	"tilelayer" : {
+		"attribution" : "Map data ©  <a href=\"http://osm.org/copyright\" >OpenStreetMap contributors</a>",
+		"url_template" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+	},
+   	"layers": {
+		"tram": {"color": "red", "width": 1.5, "humanname": "Tram"},
+		"train": {"color": "blue", "width": 2, "humanname": "Train"}
+	},
+	"maxZoom": 12
 }
 ```
 
