@@ -3,6 +3,7 @@
 
 
 temp=$(mktemp -d)
+zoom=$(jq '.maxZoom // 10' "$1/layers.json")
 
 mkdir "$temp/data"
 for i in "$1/data/"*
@@ -11,7 +12,7 @@ do
 done
 
 
-tippecanoe -aN -z10 -o "$temp/strecken.pmtiles" $temp/*.json
+tippecanoe -aN -z"$zoom" -o "$temp/strecken.pmtiles" $temp/*.json
 
 mv $temp/strecken.pmtiles "$2"
 

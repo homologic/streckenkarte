@@ -7,6 +7,7 @@ A tool to display maps of lines as vector tiles using leaflet.
 
 * Tippecanoe 
 * ogrmerge (part of gdal-bin in Debian)
+* jq
 
 ## Usage
 
@@ -42,6 +43,44 @@ to be displayed on the map can be deposited in any format understood
 by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
 GeoJSON or gpx. 
 
+#### layers.json
+
+The metadata for the layers to be rendered is given by the
+`layers.json` file in the input directory. An example layers.json file
+is given below:
+
+```
+{
+		"name" : "My map", 
+		"tilelayer" : {
+				"attribution" : "Map data ©  <a href=\"http://osm.org/copyright\" >OpenStreetMap contributors</a>",
+				"url_template" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+		},
+		"layers": {
+				"tram": {"color": "red", "width": 1.5, "humanname": "Tram"},
+				"train": {"color": "blue", "width": 2, "humanname": "Train"}
+		},
+		"maxZoom": 12
+}
+```
+
+The `name` attribute sets the title of the map. The `tilelayer` sets
+the background tile layer to be displayed (currently only raster tiles
+are supported), with `attribution` stating where the tiles came from,
+while `url_template` tells leaflet where to look for the tiles. 
+
+The `layers` object includes an entry for each layer, indexed by the
+name that each layer has in the `strecken.pmtiles` file (use the
+[PMTiles Viewer](https://pmtiles.io/) for troubleshooting), with
+`color` and `width` specifying how the layer should be rendered, and
+`humanname` being the layer name that should be displayed in the legend.
+
+The `maxZoom` parameter is given to `tippecanoe`, and determines the
+maximum zoom level for which tiles should be rendered, increasing this
+value also increases the size of the `strecken.pmtiles` file. If not
+given explicitly `maxZoom` defaults to 10.
+
+
 ## Troubleshooting
 
 ### My pmtiles file is huge (hundreds of megabytes)
@@ -59,3 +98,4 @@ jq 'del( .features[] .properties )'
 on the input file with excessive metadata. 
 
 
+b

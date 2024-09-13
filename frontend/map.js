@@ -11,15 +11,6 @@ legend.onAdd = function (map) {
 };
 
 
-var strecken = protomapsL.leafletLayer({
-    url: "strecken.pmtiles",
-		maxDataZoom: 10,
-		maxZoom: 19,
-    paintRules: rules,
-		
-});
-
-
 const map = L.map("map", {  center: [52,13], zoom: 3, minZoom: 0 });
 fetch("layers.json")
 		.then((response) => response.json())
@@ -40,7 +31,14 @@ fetch("layers.json")
 								maxZoom: 19,
 								attribution: tiles["attribution"]
 						}
-				)
+				);
+				var strecken = protomapsL.leafletLayer({
+						url: "strecken.pmtiles",
+						maxDataZoom: data["maxZoom"] ?? 10,
+						maxZoom: 19,
+						paintRules: rules,	
+				});
+
 				osm.addTo(map);
 				legend.addTo(map);
 				strecken.addTo(map);
