@@ -4,11 +4,15 @@ import re
 import requests
 import json
 import os
-import sys
+import argparse
 
+parser = argparse.ArgumentParser(description='Export Umap maps for use with streckenkarte')
+parser.add_argument("URL", help="The map's URL")
+parser.add_argument("output_dir", help="Output directory")
 
-url = sys.argv[1]
-outdir = sys.argv[2]
+args = parser.parse_args()
+url = args.URL
+outdir = args.output_dir
 
 base = url.split("/map/")[0]
 r = requests.get(url)
