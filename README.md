@@ -41,7 +41,8 @@ The input data for `strecken.pmtiles` consists of a `data/` folder,
 with one subfolder for each layer. In each of these folders, the lines
 to be displayed on the map can be deposited in any format understood
 by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
-GeoJSON or gpx. 
+GeoJSON or gpx. The input data can be obtained from OpenStreetMap
+using tools such as [brouter][brouter] or [osmexp][osmexp].
 
 #### layers.json
 
@@ -96,3 +97,7 @@ jq 'del( .features[] .properties )'
 ```
 
 on the input file with excessive metadata. 
+
+
+[brouter]: https://brouter.de/brouter-web/
+[osmexp]: https://github.com/homologic/osmexp
