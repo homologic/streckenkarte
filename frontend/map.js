@@ -12,6 +12,24 @@ legend.onAdd = function (map) {
 
 
 const map = L.map("map", {  center: [52,13], zoom: 3, minZoom: 0 });
+
+function update_hash() {
+		const {lat, lng} = this.getCenter();
+		const zoom = this.getZoom();
+		const digits = 4;
+		window.history.replaceState(null, '', `#map=${zoom}/${lat.toFixed(digits)}/${lng.toFixed(digits)}`);
+}
+
+function onHashChange() {
+		const hash = document.location.hash;
+		const coords = decodeURIComponent(hash.slice(5)).split("/") // strip off the #map= part
+		const latLng = L.latLng(parseFloat(coords[1]), parseFloat(coords[2]));
+		map.setView(latLng, parseInt(coords[0]));
+}
+
+map.on("moveend", update_hash);
+map.on("zoomend", update_hash);
+
 fetch("layers.json")
 		.then((response) => response.json())
 		.then((data) => {
@@ -51,4 +69,7 @@ resize();
 window.addEventListener('resize', () => {
 	resize();
 });
+
+window.addEventListener("hashchange", onHashChange);
+onHashChange();
 
