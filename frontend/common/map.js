@@ -69,7 +69,10 @@ let geojsons = [];
 let geojson;
 
 async function updateBrouter () {
-		if (markers.length < 1) {
+		if (markers.length < 2) {
+				if (geojson != undefined) {
+						map.removeLayer(geojson);
+				}
 				return;
 		}
 		geojsons = [];
