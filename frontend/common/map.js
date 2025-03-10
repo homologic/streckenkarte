@@ -4,10 +4,10 @@ function layer_legend(layer) {
 
 const rules = new Array;
 const l = new Array;
-var legend = L.control({position: 'bottomleft'});
+const legend = L.control({position: 'bottomleft'});
 legend.onAdd = function (map) {
-		var div = L.DomUtil.create('div', 'legend');
-		for (var i = 0; i < l.length; i++) {
+		const div = L.DomUtil.create('div', 'legend');
+		for (let i = 0; i < l.length; i++) {
 			  div.innerHTML += layer_legend(l[i]) + "<br>";
 		}
 		return div;
@@ -37,7 +37,7 @@ fetch("layers.json")
 		.then((response) => response.json())
 		.then((data) => {
 				document.title = data["name"]
-				layers = data["layers"]
+				const layers = data["layers"]
 				for (let key in layers) {
 						l.push({ dirname: key , name: layers[key]["humanname"], color: layers[key]["color"] });
 						rules.push({
@@ -46,14 +46,14 @@ fetch("layers.json")
 						});
 				}
 				const tiles = data["tilelayer"]
-				var osm = L.tileLayer(
+				const osm = L.tileLayer(
 						tiles["url_template"],
 						{
 								maxZoom: 19,
 								attribution: tiles["attribution"]
 						}
 				);
-				var strecken = protomapsL.leafletLayer({
+				const strecken = protomapsL.leafletLayer({
 						url: "strecken.pmtiles",
 						maxDataZoom: data["maxZoom"] ?? 10,
 						maxZoom: 19,
@@ -172,13 +172,19 @@ async function pickDirectory(e){
 		}
 }
 
-if ("showDirectoryPicker" in window) {
+const searchParams = new URLSearchParams(window.location.search)
+const edit = searchParams.get("edit");
+
+if (edit) {
 		const customButton = L.control({ position: 'topright' });
 		customButton.onAdd = () => {
 				const buttonDiv = L.DomUtil.create('div', 'legend');
-				
-				buttonDiv.innerHTML = `<button id="edit-mode" >Edit</button>`;
-				buttonDiv.addEventListener('click', pickDirectory, this)
+				if ("showDirectoryPicker" in window) {
+						buttonDiv.innerHTML = `<button id="edit-mode" >Edit</button>`;
+						buttonDiv.addEventListener('click', pickDirectory, this)
+				} else {
+						buttonDiv.innerHTML = "Your browser does not support editing. <br> As of 2025, editing is supported on Chromium-based browsers only.";
+				}
 				return buttonDiv;
 		};
 		customButton.addTo(map)
