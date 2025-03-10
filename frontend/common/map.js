@@ -72,6 +72,19 @@ let geojsons = [];
 let geojson;
 let editlayer;
 
+function addGeoJsonToMap(dat) {
+		if (editlayer != undefined) {
+				const style = {
+						"color": editlayer.color
+				};
+				g = L.geoJSON(dat, {style: style});
+		} else {
+				g = L.geoJSON(dat);
+		}
+		g.addTo(map);
+		return g;
+}
+
 async function updateBrouter () {
 		if (markers.length > 0) {
 				for (i=1; i< markers.length-1; i++) {
@@ -98,15 +111,7 @@ async function updateBrouter () {
 								}
 								geojsons.push(data.features[0]);
 								const dat = {type: "FeatureCollection", features: geojsons};
-								if (editlayer != undefined) {
-										const style = {
-												"color": editlayer.color
-										};
-										geojson = L.geoJSON(dat, {style: style});
-								} else {
-										geojson = L.geoJSON(dat);
-								}
-								geojson.addTo(map);
+								geojson = addGeoJsonToMap(dat);
 						})
 		}
 }
@@ -157,6 +162,12 @@ async function pickDirectory(e){
 				const writableStream = await file.createWritable();
 				await writableStream.write(blob);
 				await writableStream.close();
+				addGeoJsonToMap(dat);
+				for (i=0; i<markers.length; i++) {
+						map.removeLayer(markers[i]);
+				}
+				markers = [];
+				updateBrouter();
 				alert("Saved file!");
 		}
 }
