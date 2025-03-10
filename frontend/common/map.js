@@ -109,6 +109,7 @@ async function updateBrouter () {
 								if (geojson != undefined) {
 										map.removeLayer(geojson);
 								}
+								delete data.features[0].properties.messages
 								geojsons.push(data.features[0]);
 								const dat = {type: "FeatureCollection", features: geojsons};
 								geojson = addGeoJsonToMap(dat);
