@@ -73,6 +73,13 @@ let geojson;
 let editlayer;
 
 async function updateBrouter () {
+		if (markers.length > 0) {
+				for (i=1; i< markers.length-1; i++) {
+						markers[i]._icon.classList.remove("red");
+				}
+				markers[markers.length-1]._icon.classList.add("red");
+				markers[0]._icon.classList.add("green");
+		}
 		if (markers.length < 2) {
 				if (geojson != undefined) {
 						map.removeLayer(geojson);
@@ -110,7 +117,6 @@ map.on('click', function(e) {
 		// }
 		marker = new L.marker(e.latlng, {draggable: true}) ;
 		markers.push(marker);
-		updateBrouter();
 		marker.on("click", function(e) {
 				map.removeLayer(this);
 				markers = markers.filter(item => item != this);
@@ -120,6 +126,7 @@ map.on('click', function(e) {
 				updateBrouter();
 		});
 		marker.addTo(map);
+		updateBrouter();
 });
 
 
