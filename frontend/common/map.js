@@ -1,3 +1,6 @@
+function layer_legend(layer) {
+		return '<span class="dot" style="background: ' + layer["color"] + '" ></span>' + layer["name"];
+}
 
 const rules = new Array;
 const l = new Array;
@@ -5,7 +8,7 @@ var legend = L.control({position: 'bottomleft'});
 legend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'legend');
 		for (var i = 0; i < l.length; i++) {
-			  div.innerHTML += '<span class="dot" style="background: ' + l[i]["color"] + '" ></span>' + l[i]["name"] + "<br>";
+			  div.innerHTML += layer_legend(l[i]) + "<br>";
 		}
 		return div;
 };
@@ -36,7 +39,7 @@ fetch("layers.json")
 				document.title = data["name"]
 				layers = data["layers"]
 				for (let key in layers) {
-						l.push({ name: layers[key]["humanname"], color: layers[key]["color"] });
+						l.push({ dirname: key , name: layers[key]["humanname"], color: layers[key]["color"] });
 						rules.push({
 								dataLayer: key,
 								symbolizer: new protomapsL.LineSymbolizer(layers[key])
@@ -67,6 +70,7 @@ let editMode = false;
 let markers = [];
 let geojsons = [];
 let geojson;
+let editlayer;
 
 async function updateBrouter () {
 		if (markers.length < 2) {
@@ -87,7 +91,14 @@ async function updateBrouter () {
 								}
 								geojsons.push(data.features[0]);
 								const dat = {type: "FeatureCollection", features: geojsons};
-								geojson = L.geoJSON(dat);
+								if (editlayer != undefined) {
+										const style = {
+												"color": editlayer.color
+										};
+										geojson = L.geoJSON(dat, {style: style});
+								} else {
+										geojson = L.geoJSON(dat);
+								}
 								geojson.addTo(map);
 						})
 		}
@@ -104,15 +115,28 @@ map.on('click', function(e) {
 				map.removeLayer(this);
 				markers = markers.filter(item => item != this);
 				updateBrouter();
-				console.log(markers);
 		})
+		marker.on("dragend", function(e) {
+				updateBrouter();
+		});
 		marker.addTo(map);
 });
 
 
-async function pickDirectory(){
+async function pickDirectory(e){
+		e.stopPropagation()
+		L.DomEvent.preventDefault(e);
 		if (!editMode) {
 				dirHandle = await window.showDirectoryPicker();
+				for (i = 0; i < l.length ; i++ ) {
+						console.log(l[i].dirname);
+						if (l[i].dirname === dirHandle.name) {
+								editlayer = l[i];
+								this.innerHTML = "Editing layer " + layer_legend(l[i]) + "<br>" + this.innerHTML
+								break;
+						}
+				}
+
 				document.getElementById("edit-mode").style.color = "red";
 				document.getElementById("edit-mode").innerHTML = "save";
 				editMode = true;
@@ -130,16 +154,17 @@ async function pickDirectory(){
 		}
 }
 
-const customButton = L.control({ position: 'topright' });
-customButton.onAdd = () => {
-    const buttonDiv = L.DomUtil.create('div', 'button-wrapper');
-
-    buttonDiv.innerHTML = `<button id="edit-mode" >Edit</button>`;
-    buttonDiv.addEventListener('click', () => pickDirectory())
-    return buttonDiv;
-};
-customButton.addTo(map)
-
+if ("showDirectoryPicker" in window) {
+		const customButton = L.control({ position: 'topright' });
+		customButton.onAdd = () => {
+				const buttonDiv = L.DomUtil.create('div', 'legend');
+				
+				buttonDiv.innerHTML = `<button id="edit-mode" >Edit</button>`;
+				buttonDiv.addEventListener('click', pickDirectory, this)
+				return buttonDiv;
+		};
+		customButton.addTo(map)
+}
 
 
 function resize() {
