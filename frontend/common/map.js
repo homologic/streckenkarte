@@ -117,9 +117,9 @@ async function updateBrouter () {
 }
 
 map.on('click', function(e) {
-		// if (!editMode) {
-		// 		return;
-		// }
+		if (!editMode) {
+				return;
+		}
 		marker = new L.marker(e.latlng, {draggable: true}) ;
 		markers.push(marker);
 		marker.on("click", function(e) {
@@ -139,7 +139,7 @@ async function pickDirectory(e){
 		e.stopPropagation()
 		L.DomEvent.preventDefault(e);
 		if (!editMode) {
-				dirHandle = await window.showDirectoryPicker();
+				dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
 				for (i = 0; i < l.length ; i++ ) {
 						console.log(l[i].dirname);
 						if (l[i].dirname === dirHandle.name) {
