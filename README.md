@@ -82,6 +82,20 @@ value also increases the size of the `strecken.pmtiles` file. If not
 given explicitly `maxZoom` defaults to 10.
 
 
+## Map Editing Mode
+
+As a new experimental feature, Streckenkarte implements a simple
+[brouter][brouter] frontend to allow for easy editing, currently only
+supported on browsers that support
+[showDirectoryPicker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker). It
+can be accessed by adding `?edit=1` to the URL and then clicking the
+"edit" button that appears in the top right corner. Then, the
+directory containing the files for the layer that is to be edited can
+be opened in the file selection dialog and lines can be drawn as in
+the normal brouter web frontend. By clicking on "save", the lines are
+saved locally in the chosen directory and will only appear on the
+production map if processed correctly by the tile-generating script.
+
 ## Troubleshooting
 
 ### My pmtiles file is huge (hundreds of megabytes)
