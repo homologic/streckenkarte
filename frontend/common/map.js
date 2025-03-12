@@ -93,13 +93,13 @@ async function updateBrouter () {
 				markers[markers.length-1]._icon.classList.add("red");
 				markers[0]._icon.classList.add("green");
 		}
+		geojsons = [];
 		if (markers.length < 2) {
 				if (geojson != undefined) {
 						map.removeLayer(geojson);
 				}
 				return;
 		}
-		geojsons = [];
 		for (let i = 0; i < markers.length - 1 ; i++) {
 				const marker1 = markers[i].getLatLng();
 				const marker2 = markers[i+1].getLatLng();
@@ -154,7 +154,14 @@ async function pickDirectory(e){
 				document.getElementById("edit-mode").innerHTML = "save";
 				editMode = true;
 		} else {
+				if (geojsons.length < 1) {
+						alert("There is no path to save!");
+						return;
+				}
 				const filename = window.prompt("Enter filename:", "test");
+				if (filename === null) {
+						return;
+				}
 				const dat = {type: "FeatureCollection", features: geojsons};
 				const file = await dirHandle.getFileHandle(`${filename}.geojson`, {
 						create: true
