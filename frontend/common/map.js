@@ -141,6 +141,9 @@ async function pickDirectory(e){
 		L.DomEvent.preventDefault(e);
 		if (!editMode) {
 				dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+				if (!dirHandle) {
+						return;
+				}
 				for (i = 0; i < l.length ; i++ ) {
 						console.log(l[i].dirname);
 						if (l[i].dirname === dirHandle.name) {
