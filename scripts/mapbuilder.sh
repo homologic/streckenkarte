@@ -1,6 +1,9 @@
 #!/bin/bash
 
-
+[ -n "$1" -a -n "$2" ] || {
+	echo "Usage: $0 INPUT_DIRECTORY OUTPUT_DIRECTORY"
+	exit 1
+}
 
 temp=$(mktemp -d)
 zoom=$(jq '.maxZoom // 10' "$1/layers.json")
