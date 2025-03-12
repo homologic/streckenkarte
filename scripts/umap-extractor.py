@@ -17,13 +17,19 @@ outdir = args.output_dir
 base = url.split("/map/")[0]
 r = requests.get(url)
 
-regexp = re.compile(r'U.MAP = new U.Map[(]"map", (.+) }\)', re.DOTALL)
+new_umap = False
+
+if "new Umap" in r.text :
+    new_umap = True
+    regexp = re.compile(r'U.MAP = new Umap."map",(.+}\))', re.DOTALL)
+else :
+    regexp = re.compile(r'U.MAP = new U.Map[(]"map", (.+) }\)', re.DOTALL)
 
 data = json.loads(regexp.findall(r.text, re.DOTALL)[0].replace("})","}"))
 
 properties = data["properties"]
 layers = properties["datalayers"]
-map_id = properties["umap_id"]
+map_id = properties["id" if new_umap else "umap_id"]
 
 config = {}
 config["name"] = properties["name"]
