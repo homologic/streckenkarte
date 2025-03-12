@@ -5,7 +5,7 @@ A tool to display maps of lines as vector tiles using leaflet.
 
 ## Dependencies
 
-* Tippecanoe (requires verision 2 or later)
+* Tippecanoe (requires version 2 or later)
 * ogrmerge (part of gdal-bin in Debian)
 * jq
 
