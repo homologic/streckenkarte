@@ -159,7 +159,7 @@ async function pickDirectory(e){
 						return;
 				}
 				const filename = window.prompt("Enter filename:", "test");
-				if (filename === null) {
+				if (!filename) {
 						return;
 				}
 				const dat = {type: "FeatureCollection", features: geojsons};
