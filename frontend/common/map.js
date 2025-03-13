@@ -68,7 +68,8 @@ let pointRules = [
 								return `400 ${size}px sans-serif`;		
 						},
 				}),
-				filter: (z,f) => { return f.props.zoom < z  }
+				filter: (z,f) => { return f.props.zoom < z  },
+				sort: (a,b) => { return a.zoom - b.zoom }
 		}
 ];
 
