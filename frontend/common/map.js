@@ -139,8 +139,9 @@ function addGeoJsonToMap(dat) {
 
 async function updateBrouter () {
 		if (markers.length > 0) {
-				for (i=1; i< markers.length-1; i++) {
+				for (i=0; i< markers.length; i++) {
 						markers[i]._icon.classList.remove("red");
+						markers[i]._icon.classList.remove("darkred");
 				}
 				markers[markers.length-1]._icon.classList.add("red");
 				markers[0]._icon.classList.add("green");
@@ -156,16 +157,26 @@ async function updateBrouter () {
 				const marker1 = markers[i].getLatLng();
 				const marker2 = markers[i+1].getLatLng();
 				const url = `https://brouter.de/brouter?lonlats=${marker1.lng},${marker1.lat}|${marker2.lng},${marker2.lat}&profile=rail&alternativeidx=0&format=geojson`;
-				fetch(url).then((response) => response.json())
+				fetch(url).then((response) => {
+						if (geojson != undefined) {
+								map.removeLayer(geojson);
+						}
+						if (!response.ok) {
+								throw new Error("HTTP error " + response.status);
+						}
+						return response.json()
+				})
 						.then((data) => {
-								if (geojson != undefined) {
-										map.removeLayer(geojson);
-								}
 								delete data.features[0].properties.messages
 								geojsons.push(data.features[0]);
 								const dat = {type: "FeatureCollection", features: geojsons};
 								geojson = addGeoJsonToMap(dat);
 						})
+						.catch(err => {
+								markers[i]._icon.classList.add("darkred");
+								markers[i+1]._icon.classList.add("darkred");
+						}
+						)
 		}
 }
 
