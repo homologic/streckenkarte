@@ -147,10 +147,10 @@ async function updateBrouter () {
 				markers[0]._icon.classList.add("green");
 		}
 		geojsons = [];
+		if (geojson != undefined) {
+				map.removeLayer(geojson);
+		}
 		if (markers.length < 2) {
-				if (geojson != undefined) {
-						map.removeLayer(geojson);
-				}
 				return;
 		}
 		for (let i = 0; i < markers.length - 1 ; i++) {
@@ -158,15 +158,15 @@ async function updateBrouter () {
 				const marker2 = markers[i+1].getLatLng();
 				const url = `https://brouter.de/brouter?lonlats=${marker1.lng},${marker1.lat}|${marker2.lng},${marker2.lat}&profile=rail&alternativeidx=0&format=geojson`;
 				fetch(url).then((response) => {
-						if (geojson != undefined) {
-								map.removeLayer(geojson);
-						}
 						if (!response.ok) {
 								throw new Error("HTTP error " + response.status);
 						}
 						return response.json()
 				})
 						.then((data) => {
+								if (geojson != undefined) {
+										map.removeLayer(geojson);
+								}
 								delete data.features[0].properties.messages
 								geojsons.push(data.features[0]);
 								const dat = {type: "FeatureCollection", features: geojsons};
