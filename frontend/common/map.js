@@ -36,7 +36,7 @@ map.on("zoomend", update_hash);
 
 let pointPaintRules = [
 		{
-				dataLayer: "punkte",
+				dataLayer: "points",
 				symbolizer: new protomapsL.CircleSymbolizer({
 						radius: 3,
 						fill: 'black',
@@ -49,7 +49,7 @@ let pointPaintRules = [
 
 let pointRules = [
 		{
-				dataLayer: "punkte",
+				dataLayer: "points",
 				symbolizer: 
 				new protomapsL.OffsetTextSymbolizer({
 						labelProps: ["name_local", "name_lat"],
