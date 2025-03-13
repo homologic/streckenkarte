@@ -33,6 +33,45 @@ function onHashChange() {
 map.on("moveend", update_hash);
 map.on("zoomend", update_hash);
 
+
+let pointPaintRules = [
+		{
+				dataLayer: "punkte",
+				symbolizer: new protomapsL.CircleSymbolizer({
+						radius: 3,
+						fill: 'black',
+						stroke: 'white',
+						width: 1.5,
+				}),
+				filter: (z,f) => { return f.props.zoom < z  }
+		}
+]
+
+let pointRules = [
+		{
+				dataLayer: "punkte",
+				symbolizer: 
+				new protomapsL.OffsetTextSymbolizer({
+						labelProps: ["name_local", "name_lat"],
+						offsetX: 6,
+						offsetY: 4.5,
+						fill: 'black',
+						width: 2,
+						stroke: 'white',
+						lineHeight: 1.5,
+						letterSpacing: 1,
+						font: (z, f) => {
+								const size = protomapsL.linear([
+										[3, 10],
+										[10, 12],
+								])(z);
+								return `400 ${size}px sans-serif`;		
+						},
+				}),
+				filter: (z,f) => { return f.props.zoom < z  }
+		}
+];
+
 fetch("layers.json")
 		.then((response) => response.json())
 		.then((data) => {
@@ -54,16 +93,28 @@ fetch("layers.json")
 						}
 				);
 				const strecken = protomapsL.leafletLayer({
-						url: "strecken.pmtiles",
+						url: data["pmtiles_url"] ?? "strecken.pmtiles",
 						maxDataZoom: data["maxZoom"] ?? 10,
 						maxZoom: 19,
 						paintRules: rules,	
 				});
-
 				osm.addTo(map);
 				legend.addTo(map);
 				strecken.addTo(map);
+				if ("points_url" in data) {
+						const points = protomapsL.leafletLayer({
+								url: data["points_url"],
+								maxDataZoom: data["maxZoom"] ?? 10,
+								maxZoom: 19,
+								labelRules: pointRules,
+								paintRules: pointPaintRules,
+						});
+						points.addTo(map);
+				}
 		})
+
+
+
 
 let dirHandle;
 let editMode = false;
