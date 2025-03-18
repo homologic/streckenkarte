@@ -229,9 +229,14 @@ async function pickDirectory(e){
 						return;
 				}
 				const dat = {type: "FeatureCollection", features: geojsons};
-				const file = await dirHandle.getFileHandle(`${filename}.geojson`, {
-						create: true
-				});
+				try {
+						const file = await dirHandle.getFileHandle(`${filename}.geojson`, {
+								create: true
+						});
+				} catch (error) {
+						alert(`Could not open file: ${error.message}`);
+						return
+				}
 				const blob = new Blob([JSON.stringify(dat)]);
 				const writableStream = await file.createWritable();
 				await writableStream.write(blob);
