@@ -43,7 +43,7 @@ let pointPaintRules = [
 						stroke: 'white',
 						width: 1.5,
 				}),
-				filter: (z,f) => { return f.props.zoom < z  }
+				filter: (z,f) => { return f.props.zoom > 0 && f.props.zoom < z  }
 		}
 ]
 
@@ -68,7 +68,7 @@ let pointRules = [
 								return `400 ${size}px sans-serif`;		
 						},
 				}),
-				filter: (z,f) => { return f.props.zoom < z  },
+				filter: (z,f) => { return f.props.zoom > 0 && f.props.zoom < z  },
 				sort: (a,b) => { return a.zoom - b.zoom }
 		}
 ];
@@ -229,8 +229,9 @@ async function pickDirectory(e){
 						return;
 				}
 				const dat = {type: "FeatureCollection", features: geojsons};
+				let file;
 				try {
-						const file = await dirHandle.getFileHandle(`${filename}.geojson`, {
+						file = await dirHandle.getFileHandle(`${filename}.geojson`, {
 								create: true
 						});
 				} catch (error) {
