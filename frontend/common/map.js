@@ -2,6 +2,14 @@ function layer_legend(layer) {
 		return '<span class="dot" style="background: ' + layer["color"] + '" ></span>' + layer["name"];
 }
 
+function disable_events(element) {
+		L.DomEvent.disableClickPropagation(element);
+		element.addEventListener('mouseover', L.DomEvent.stopPropagation);
+		element.addEventListener('click', L.DomEvent.preventDefault)
+		element.addEventListener('click', L.DomEvent.stopPropagation)
+}
+
+
 const rules = new Array;
 const l = new Array;
 const legend = L.control({position: 'bottomleft'});
@@ -10,6 +18,7 @@ legend.onAdd = function (map) {
 		for (let i = 0; i < l.length; i++) {
 			  div.innerHTML += layer_legend(l[i]) + "<br>";
 		}
+		disable_events(div);
 		return div;
 };
 
@@ -313,15 +322,7 @@ if (edit) {
 		customButton.onAdd = () => {
 				const buttonDiv = L.DomUtil.create('div', 'legend');
 				if ("showDirectoryPicker" in window) {
-						// const button = L.DomUtil.create('button');
-						// button.id = 'edit-mode';
-						// button.innerHTML = 'Edit';
-						// buttonDiv.appendChild(button)
-						// button.addEventListener('click', pickDirectory, this)
-						L.DomEvent.disableClickPropagation(buttonDiv);
-						buttonDiv.addEventListener('mouseover', L.DomEvent.stopPropagation);
-						buttonDiv.addEventListener('click', L.DomEvent.preventDefault)
-						buttonDiv.addEventListener('click', L.DomEvent.stopPropagation)
+						disable_events(buttonDiv)
 						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
 <div class="edit-ui">
 <div id="layername" ></div>
