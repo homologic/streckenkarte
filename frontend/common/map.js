@@ -15,6 +15,8 @@ legend.onAdd = function (map) {
 
 
 const map = L.map("map", {  center: [52,13], zoom: 3, minZoom: 0 });
+map.attributionControl.setPrefix('Made with <a href="https://github.com/homologic/streckenkarte" > Streckenkarte</a>' );
+
 
 function update_hash() {
 		const {lat, lng} = this.getCenter();
@@ -94,6 +96,7 @@ fetch("layers.json")
 						}
 				);
 				const strecken = protomapsL.leafletLayer({
+						attribution: "",
 						url: data["pmtiles_url"] ?? "strecken.pmtiles",
 						maxDataZoom: data["maxZoom"] ?? 10,
 						maxZoom: 19,
@@ -104,6 +107,7 @@ fetch("layers.json")
 				strecken.addTo(map);
 				if ("points_url" in data) {
 						const points = protomapsL.leafletLayer({
+								attribution: "",
 								url: data["points_url"],
 								maxDataZoom: data["maxZoom"] ?? 10,
 								maxZoom: 19,
@@ -120,6 +124,7 @@ fetch("layers.json")
 let dirHandle;
 let editMode = false;
 let markers = [];
+let anglemarkers = [];
 let geojsons = [];
 let geojson;
 let editlayer;
@@ -137,6 +142,39 @@ function addGeoJsonToMap(dat) {
 		return g;
 }
 
+function computeVector(coords, i) {
+		return [coords[i][0] - coords[i-1][0], coords[i][1] - coords[i-1][1]];
+}
+
+function scalarProduct(a,b) {
+		return a[0] * b[0] + a[1] * b[1]
+}
+
+async function recompute_anglemarkers(g) {
+		for (k=0; k < anglemarkers.length ; k++) {
+				map.removeLayer(anglemarkers[k])
+		}
+		anglemarkers = [];
+		const limit = document.getElementById("angle").value
+		
+		for (j=0; j< g.length; j++) {
+				const coords = g[j].geometry.coordinates;
+				console.log(coords);
+				for (let i=1; i < coords.length - 1; i++) {
+						const a = computeVector(coords,i);
+						const b = computeVector(coords,i+1);
+						let angle = Math.acos(scalarProduct(a,b)/Math.sqrt(scalarProduct(a,a)*scalarProduct(b,b)))
+						if (angle > limit ) {
+								let mark = new L.marker(L.latLng(coords[i][1],coords[i][0]))
+								anglemarkers.push(mark);
+								mark.addTo(map);
+								mark._icon.classList.add("warn");
+						}
+						console.log(angle)
+				}
+		}
+}
+
 async function updateBrouter () {
 		if (markers.length > 0) {
 				for (i=0; i< markers.length; i++) {
@@ -147,6 +185,7 @@ async function updateBrouter () {
 				markers[0]._icon.classList.add("green");
 		}
 		geojsons = [];
+		recompute_anglemarkers(geojsons);
 		if (geojson != undefined) {
 				map.removeLayer(geojson);
 		}
@@ -167,8 +206,11 @@ async function updateBrouter () {
 								if (geojson != undefined) {
 										map.removeLayer(geojson);
 								}
-								delete data.features[0].properties.messages
+								delete data.features[0].properties.messages;
+
+								console.log(data.features[0].geometry.coordinates)
 								geojsons.push(data.features[0]);
+								recompute_anglemarkers(geojsons);
 								const dat = {type: "FeatureCollection", features: geojsons};
 								geojson = addGeoJsonToMap(dat);
 						})
@@ -199,6 +241,14 @@ map.on('click', function(e) {
 });
 
 
+async function quitEdit(e) {
+		e.stopPropagation()
+		L.DomEvent.preventDefault(e);
+		editMode = false;
+		document.querySelector(".edit-ui").style.display = "none";
+		document.getElementById("edit-mode").style.display = "block";
+}
+
 async function pickDirectory(e){
 		e.stopPropagation()
 		L.DomEvent.preventDefault(e);
@@ -207,18 +257,21 @@ async function pickDirectory(e){
 				if (!dirHandle) {
 						return;
 				}
+				const layerspan = document.querySelector("#layername")
+				layerspan.innerHTML = ""
 				for (i = 0; i < l.length ; i++ ) {
 						console.log(l[i].dirname);
 						if (l[i].dirname === dirHandle.name) {
+								console.log(l[i])
+								console.log(this)
 								editlayer = l[i];
-								this.innerHTML = "Editing layer " + layer_legend(l[i]) + "<br>" + this.innerHTML
+								layerspan.innerHTML = "Editing layer " + layer_legend(l[i]) + "<br>" 
 								break;
 						}
 				}
-
-				document.getElementById("edit-mode").style.color = "red";
-				document.getElementById("edit-mode").innerHTML = "save";
 				editMode = true;
+				document.getElementById("edit-mode").style.display = "none";
+				document.querySelector(".edit-ui").style.display = "block";
 		} else {
 				if (geojsons.length < 1) {
 						alert("There is no path to save!");
@@ -260,8 +313,22 @@ if (edit) {
 		customButton.onAdd = () => {
 				const buttonDiv = L.DomUtil.create('div', 'legend');
 				if ("showDirectoryPicker" in window) {
-						buttonDiv.innerHTML = `<button id="edit-mode" >Edit</button>`;
-						buttonDiv.addEventListener('click', pickDirectory, this)
+						// const button = L.DomUtil.create('button');
+						// button.id = 'edit-mode';
+						// button.innerHTML = 'Edit';
+						// buttonDiv.appendChild(button)
+						// button.addEventListener('click', pickDirectory, this)
+						L.DomEvent.disableClickPropagation(buttonDiv);
+						buttonDiv.addEventListener('mouseover', L.DomEvent.stopPropagation);
+						buttonDiv.addEventListener('click', L.DomEvent.preventDefault)
+						buttonDiv.addEventListener('click', L.DomEvent.stopPropagation)
+						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
+<div class="edit-ui">
+<div id="layername" ></div>
+<label for="angle">Turn restriction sensitivity</label><br>
+<input type="range" min="0" step="0.05" max="1" value="0.35" class="slider" id="angle" onchange="recompute_anglemarkers(geojsons)" ><br>
+<button id="save" onClick="pickDirectory(event)" >Save</button><button id="quit" onclick="quitEdit(event)" >Quit</button>
+</div>`
 				} else {
 						buttonDiv.innerHTML = "Your browser does not support editing. <br> As of 2025, editing is supported on Chromium-based browsers only.";
 				}

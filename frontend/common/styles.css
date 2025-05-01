@@ -1,3 +1,4 @@
+
 body {
 	margin: 0;
 	padding: 0;
@@ -22,3 +23,7 @@ body {
 img.red { filter: hue-rotate(120deg); }
 img.green { filter: hue-rotate(-120deg); }
 img.darkred { filter: hue-rotate(160deg); }
+img.warn { filter: hue-rotate(160deg); }
+div.edit-ui {
+	display: none;
+}
