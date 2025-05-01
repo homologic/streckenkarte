@@ -90,7 +90,10 @@ fetch("layers.json")
 				document.title = data["name"]
 				const layers = data["layers"]
 				for (let key in layers) {
-						l.push({ dirname: key , name: layers[key]["humanname"], color: layers[key]["color"] });
+						let layer = layers[key]
+						layer.name = layer['humanname']
+						layer.dirname = key
+						l.push(layer)
 						rules.push({
 								dataLayer: key,
 								symbolizer: new protomapsL.LineSymbolizer(layers[key])
@@ -168,7 +171,6 @@ async function recompute_anglemarkers(g) {
 		
 		for (j=0; j< g.length; j++) {
 				const coords = g[j].geometry.coordinates;
-				console.log(coords);
 				for (let i=1; i < coords.length - 1; i++) {
 						const a = computeVector(coords,i);
 						const b = computeVector(coords,i+1);
@@ -179,7 +181,6 @@ async function recompute_anglemarkers(g) {
 								mark.addTo(map);
 								mark._icon.classList.add("warn");
 						}
-						console.log(angle)
 				}
 		}
 }
@@ -204,7 +205,8 @@ async function updateBrouter () {
 		for (let i = 0; i < markers.length - 1 ; i++) {
 				const marker1 = markers[i].getLatLng();
 				const marker2 = markers[i+1].getLatLng();
-				const url = `https://brouter.de/brouter?lonlats=${marker1.lng},${marker1.lat}|${marker2.lng},${marker2.lat}&profile=rail&alternativeidx=0&format=geojson`;
+				const profile = document.querySelector("#brouter-profile").value;
+				const url = `https://brouter.de/brouter?lonlats=${marker1.lng},${marker1.lat}|${marker2.lng},${marker2.lat}&profile=${profile}&alternativeidx=0&format=geojson`;
 				fetch(url).then((response) => {
 						if (!response.ok) {
 								throw new Error("HTTP error " + response.status);
@@ -216,8 +218,6 @@ async function updateBrouter () {
 										map.removeLayer(geojson);
 								}
 								delete data.features[0].properties.messages;
-
-								console.log(data.features[0].geometry.coordinates)
 								geojsons.push(data.features[0]);
 								recompute_anglemarkers(geojsons);
 								const dat = {type: "FeatureCollection", features: geojsons};
@@ -251,6 +251,13 @@ map.on('click', function(e) {
 
 
 async function quitEdit(e) {
+		for (i=0; i< markers.length; i++) {
+				map.removeLayer(markers[i]);
+		}
+
+		markers = []
+		updateBrouter()
+		recompute_anglemarkers([]);
 		e.stopPropagation()
 		L.DomEvent.preventDefault(e);
 		editMode = false;
@@ -269,11 +276,10 @@ async function pickDirectory(e){
 				const layerspan = document.querySelector("#layername")
 				layerspan.innerHTML = ""
 				for (i = 0; i < l.length ; i++ ) {
-						console.log(l[i].dirname);
 						if (l[i].dirname === dirHandle.name) {
-								console.log(l[i])
-								console.log(this)
 								editlayer = l[i];
+								const profile = editlayer["brouter-profile"] ?? "rail" ;
+								document.querySelector("#brouter-profile").value = profile;
 								layerspan.innerHTML = "Editing layer " + layer_legend(l[i]) + "<br>" 
 								break;
 						}
@@ -326,6 +332,8 @@ if (edit) {
 						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
 <div class="edit-ui">
 <div id="layername" ></div>
+<label for="brouter-profile">Brouter Profile</label><br>
+<input type="text" id="brouter-profile" ><br>
 <label for="angle">Turn restriction sensitivity</label><br>
 <input type="range" min="0" step="0.05" max="1" value="0.35" class="slider" id="angle" onchange="recompute_anglemarkers(geojsons)" ><br>
 <button id="save" onClick="pickDirectory(event)" >Save</button><button id="quit" onclick="quitEdit(event)" >Quit</button>
