@@ -333,7 +333,7 @@ if (edit) {
 <div class="edit-ui">
 <div id="layername" ></div>
 <label for="brouter-profile">Brouter Profile</label><br>
-<input type="text" id="brouter-profile" ><br>
+<input type="text" id="brouter-profile" onchange="updateBrouter()" ><br>
 <label for="angle">Turn restriction sensitivity</label><br>
 <input type="range" min="0" step="0.05" max="1" value="0.35" class="slider" id="angle" onchange="recompute_anglemarkers(geojsons)" ><br>
 <button id="save" onClick="pickDirectory(event)" >Save</button><button id="quit" onclick="quitEdit(event)" >Quit</button>
