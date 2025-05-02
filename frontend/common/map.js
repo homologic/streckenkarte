@@ -197,6 +197,8 @@ async function updateBrouter () {
 				}
 				markers[markers.length-1]._icon.classList.add("red");
 				markers[0]._icon.classList.add("green");
+		} else {
+				resetEditing()
 		}
 		geojsons = [];
 		recompute_anglemarkers(geojsons);
@@ -204,6 +206,7 @@ async function updateBrouter () {
 				map.removeLayer(geojson);
 		}
 		if (markers.length < 2) {
+				document.querySelector("#save").disabled = true
 				return;
 		}
 		for (let i = 0; i < markers.length - 1 ; i++) {
@@ -221,6 +224,7 @@ async function updateBrouter () {
 								if (geojson != undefined) {
 										map.removeLayer(geojson);
 								}
+								document.querySelector("#save").disabled = false
 								delete data.features[0].properties.messages;
 								geojsons.push(data.features[0]);
 								recompute_anglemarkers(geojsons);
@@ -236,6 +240,10 @@ async function updateBrouter () {
 }
 
 async function addBrouterMarker(pos) {
+		if (!editing) {
+				editFilename = undefined
+		}
+		purgeLayer(endmarkers)
 		const marker = new L.marker(pos, {draggable: true}) ;
 		markers.push(marker);
 		marker.on("click", function(e) {
@@ -279,10 +287,17 @@ const mapJSONs = {}
 let editFilename
 let editing
 
+async function resetEditing() {
+		editFilename = undefined;
+		editing = false
+		document.querySelector('#featurename').innerHTML = ""
+}
+
 async function startEdit(e) {
 		editing = true
 		purgeLayer(endmarkers)
 		addBrouterMarker(this._latlng)
+		document.querySelector('#featurename').innerHTML = `Editing ${editFilename.replace(/\.geojson$|\.json$/,"")}</br>`
 }
 
 async function whenClicked(e, feature, filename) {
@@ -299,7 +314,6 @@ async function whenClicked(e, feature, filename) {
 				mark.on('click', startEdit)
 		}
 		editFilename = filename
-		document.querySelector('#featurename').innerHTML = `Editing ${editFilename.replace(/\.geojson$|\.json$/,"")}</br>`
 }
 
 
@@ -384,8 +398,7 @@ async function pickDirectory(e){
 				}
 				markers = [];
 				updateBrouter();
-				editing = false;
-				editFilename = undefined;
+				resetEditing();
 				alert("Saved file!");
 		}
 }
@@ -407,7 +420,7 @@ if (edit) {
 <input type="text" id="brouter-profile" onchange="updateBrouter()" ><br>
 <label for="angle">Turn restriction sensitivity</label><br>
 <input type="range" min="0" step="0.05" max="1" value="0.35" class="slider" id="angle" onchange="recompute_anglemarkers(geojsons)" ><br>
-<button id="save" onClick="pickDirectory(event)" >Save</button><button id="quit" onclick="quitEdit(event)" >Quit</button>
+<button id="save" onClick="pickDirectory(event)" disabled>Save</button><button id="quit" onclick="quitEdit(event)" >Quit</button>
 </div>`
 				} else {
 						buttonDiv.innerHTML = "Your browser does not support editing. <br> As of 2025, editing is supported on Chromium-based browsers only.";
