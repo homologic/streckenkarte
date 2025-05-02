@@ -289,6 +289,7 @@ let editing
 
 async function resetEditing() {
 		editFilename = undefined;
+		document.querySelector('#featurename').value = ""
 		editing = false
 		document.querySelector('#featurename').innerHTML = ""
 }
@@ -297,11 +298,10 @@ async function startEdit(e) {
 		editing = true
 		purgeLayer(endmarkers)
 		addBrouterMarker(this._latlng)
-		document.querySelector('#featurename').innerHTML = `Editing ${editFilename.replace(/\.geojson$|\.json$/,"")}</br>`
 }
 
 async function whenClicked(e, feature, filename) {
-		if (editing) {
+		if (markers.length > 0) {
 				return
 		}
 		L.DomEvent.stopPropagation(e)
@@ -314,6 +314,7 @@ async function whenClicked(e, feature, filename) {
 				mark.on('click', startEdit)
 		}
 		editFilename = filename
+		document.querySelector('#featurename').value = editFilename
 }
 
 
@@ -361,7 +362,7 @@ async function pickDirectory(e){
 						alert("There is no path to save!");
 						return;
 				}
-				const filename = window.prompt("Enter filename:", editFilename ?? "feature");
+				const filename = document.querySelector('#featurename').value
 				if (!filename) {
 						return;
 				}
@@ -385,7 +386,7 @@ async function pickDirectory(e){
 						alert(`Could not open file: ${error.message}`);
 						return
 				}
-				if (filename != editFilename) {
+				if (editFilename != undefined && filename != editFilename) {
 						await dirHandle.removeEntry(editFilename)
 				}
 				const blob = new Blob([JSON.stringify(dat)]);
@@ -415,7 +416,7 @@ if (edit) {
 						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
 <div class="edit-ui">
 <div id="layername" ></div>
-<div id="featurename"></div>
+<label for="featurename">Filename</label><br><input type="text" id="featurename"><br>
 <label for="brouter-profile">Brouter Profile</label><br>
 <input type="text" id="brouter-profile" onchange="updateBrouter()" ><br>
 <label for="angle">Turn restriction sensitivity</label><br>
