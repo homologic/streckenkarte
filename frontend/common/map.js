@@ -141,6 +141,13 @@ let geojsons = [];
 let geojson;
 let editlayer;
 
+async function purgeLayer(l) {
+		while (l.length > 0) {
+				map.removeLayer(l.pop());
+		}
+}
+		
+
 function addGeoJsonToMap(dat) {
 		if (editlayer != undefined) {
 				const style = {
@@ -163,10 +170,7 @@ function scalarProduct(a,b) {
 }
 
 async function recompute_anglemarkers(g) {
-		for (k=0; k < anglemarkers.length ; k++) {
-				map.removeLayer(anglemarkers[k])
-		}
-		anglemarkers = [];
+		purgeLayer(anglemarkers)
 		const limit = document.getElementById("angle").value
 		
 		for (j=0; j< g.length; j++) {
@@ -231,11 +235,8 @@ async function updateBrouter () {
 		}
 }
 
-map.on('click', function(e) {
-		if (!editMode) {
-				return;
-		}
-		marker = new L.marker(e.latlng, {draggable: true}) ;
+async function addBrouterMarker(pos) {
+		const marker = new L.marker(pos, {draggable: true}) ;
 		markers.push(marker);
 		marker.on("click", function(e) {
 				map.removeLayer(this);
@@ -247,23 +248,61 @@ map.on('click', function(e) {
 		});
 		marker.addTo(map);
 		updateBrouter();
+}
+
+map.on('click', function(e) {
+		if (!editMode) {
+				return;
+		}
+		addBrouterMarker(e.latlng)
 });
 
 
 async function quitEdit(e) {
-		for (i=0; i< markers.length; i++) {
-				map.removeLayer(markers[i]);
-		}
-
+		e.stopPropagation()
+		L.DomEvent.preventDefault(e);
+		purgeLayer(endmarkers)
+		purgeLayer(markers)
+		purgeLayer(mapFeatures)
 		markers = []
 		updateBrouter()
 		recompute_anglemarkers([]);
-		e.stopPropagation()
-		L.DomEvent.preventDefault(e);
+
 		editMode = false;
 		document.querySelector(".edit-ui").style.display = "none";
 		document.getElementById("edit-mode").style.display = "block";
 }
+
+const endmarkers = []
+const mapFeatures = []
+const mapJSONs = {}
+let editFilename
+let editing
+
+async function startEdit(e) {
+		editing = true
+		purgeLayer(endmarkers)
+		addBrouterMarker(this._latlng)
+}
+
+async function whenClicked(e, feature, filename) {
+		if (editing) {
+				return
+		}
+		L.DomEvent.stopPropagation(e)
+		purgeLayer(endmarkers)
+		const coords = feature.geometry.coordinates
+		const start = new L.marker(L.latLng(coords[0][1],coords[0][0])).addTo(map)
+		const end = new L.marker(L.latLng(coords[coords.length-1][1],coords[coords.length-1][0])).addTo(map)
+		for (let mark of [start, end]) {
+				endmarkers.push(mark)
+				mark.on('click', startEdit)
+		}
+		editFilename = filename
+		document.querySelector('#featurename').innerHTML = `Editing ${editFilename.replace(/\.geojson$|\.json$/,"")}</br>`
+}
+
+
 
 async function pickDirectory(e){
 		e.stopPropagation()
@@ -275,6 +314,7 @@ async function pickDirectory(e){
 				}
 				const layerspan = document.querySelector("#layername")
 				layerspan.innerHTML = ""
+				document.querySelector("#brouter-profile").value = "rail";
 				for (i = 0; i < l.length ; i++ ) {
 						if (l[i].dirname === dirHandle.name) {
 								editlayer = l[i];
@@ -282,6 +322,21 @@ async function pickDirectory(e){
 								document.querySelector("#brouter-profile").value = profile;
 								layerspan.innerHTML = "Editing layer " + layer_legend(l[i]) + "<br>" 
 								break;
+						}
+				}
+				for await (const [name, handle] of dirHandle.entries()) {
+						if (handle.kind === 'file' && name.endsWith("json")) {
+								const fileData = await handle.getFile();
+								const feature = JSON.parse(await fileData.text());
+								const mapFeature = L.geoJson(feature, {
+										style : { "color": "#000", "width": 5 },
+										onEachFeature: function (feature, layer) {
+												layer.on('click', (event) => whenClicked(event, feature, name))
+										}
+								})
+								mapJSONs[name] = feature
+								mapFeature.addTo(map)
+								mapFeatures.push(mapFeature)
 						}
 				}
 				editMode = true;
@@ -292,30 +347,45 @@ async function pickDirectory(e){
 						alert("There is no path to save!");
 						return;
 				}
-				const filename = window.prompt("Enter filename:", "test");
+				const filename = window.prompt("Enter filename:", editFilename ?? "feature");
 				if (!filename) {
 						return;
 				}
-				const dat = {type: "FeatureCollection", features: geojsons};
+				let dat = {type: "FeatureCollection", features: geojsons};
+				if (editFilename != undefined && mapJSONs[editFilename]) {
+						dat = mapJSONs[editFilename]
+						dat.features = dat.features.concat(geojsons)
+				}
 				let file;
+				let deffilename
+				if (filename.match(/\.json$|\.geojson$/)) {
+						deffilename = filename
+				} else {
+						deffilename = `${filename}.geojson`
+				}
 				try {
-						file = await dirHandle.getFileHandle(`${filename}.geojson`, {
+						file = await dirHandle.getFileHandle(deffilename, {
 								create: true
 						});
 				} catch (error) {
 						alert(`Could not open file: ${error.message}`);
 						return
 				}
+				if (filename != editFilename) {
+						await dirHandle.removeEntry(editFilename)
+				}
 				const blob = new Blob([JSON.stringify(dat)]);
 				const writableStream = await file.createWritable();
 				await writableStream.write(blob);
 				await writableStream.close();
-				addGeoJsonToMap(dat);
+				addGeoJsonToMap({type: "FeatureCollection", features: geojsons});
 				for (i=0; i<markers.length; i++) {
 						map.removeLayer(markers[i]);
 				}
 				markers = [];
 				updateBrouter();
+				editing = false;
+				editFilename = undefined;
 				alert("Saved file!");
 		}
 }
@@ -332,6 +402,7 @@ if (edit) {
 						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
 <div class="edit-ui">
 <div id="layername" ></div>
+<div id="featurename"></div>
 <label for="brouter-profile">Brouter Profile</label><br>
 <input type="text" id="brouter-profile" onchange="updateBrouter()" ><br>
 <label for="angle">Turn restriction sensitivity</label><br>
