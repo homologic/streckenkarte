@@ -27,3 +27,8 @@ img.warn { filter: hue-rotate(160deg); }
 div.edit-ui {
 	display: none;
 }
+
+span.warning {
+	color: red;
+	font-weight: bold;
+}

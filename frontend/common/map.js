@@ -172,10 +172,11 @@ function scalarProduct(a,b) {
 async function recompute_anglemarkers(g) {
 		purgeLayer(anglemarkers)
 		const limit = document.getElementById("angle").value
-		
+		let distance = 0
 		for (j=0; j< g.length; j++) {
 				const coords = g[j].geometry.coordinates;
 				for (let i=1; i < coords.length - 1; i++) {
+						distance += L.latLng(coords[i][1],coords[i][0]).distanceTo(L.latLng(coords[i-1][1],coords[i-1][0]))
 						const a = computeVector(coords,i);
 						const b = computeVector(coords,i+1);
 						let angle = Math.acos(scalarProduct(a,b)/Math.sqrt(scalarProduct(a,a)*scalarProduct(b,b)))
@@ -186,6 +187,14 @@ async function recompute_anglemarkers(g) {
 								mark._icon.classList.add("warn");
 						}
 				}
+		}
+		document.querySelector("#distance").innerHTML = `${(distance / 1000).toFixed(2)} km`
+		const markSpan = document.querySelector("#anglemarkers")
+		markSpan.innerHTML = `${anglemarkers.length} warning${anglemarkers.length != 1 ? "s" : ""}`
+		if (anglemarkers.length > 0) {
+				markSpan.classList.add("warning")
+		} else {
+				markSpan.classList.remove("warning")
 		}
 }
 
@@ -416,6 +425,7 @@ if (edit) {
 						buttonDiv.innerHTML = `<button id="edit-mode" onClick="pickDirectory(event)" >Edit</button>
 <div class="edit-ui">
 <div id="layername" ></div>
+<span id="distance">0.0 km</span> - <span id="anglemarkers" >0 warnings</span><br>
 <label for="featurename">Filename</label><br><input type="text" id="featurename"><br>
 <label for="brouter-profile">Brouter Profile</label><br>
 <input type="text" id="brouter-profile" onchange="updateBrouter()" ><br>
