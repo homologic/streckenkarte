@@ -398,7 +398,7 @@ async function pickDirectory(e){
 				if (editFilename != undefined && filename != editFilename) {
 						await dirHandle.removeEntry(editFilename)
 				}
-				const blob = new Blob([JSON.stringify(dat)]);
+				const blob = new Blob([JSON.stringify(dat, null, 4)]);
 				const writableStream = await file.createWritable();
 				await writableStream.write(blob);
 				await writableStream.close();
