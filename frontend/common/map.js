@@ -101,11 +101,7 @@ fetch("layers.json")
 				}
 				const tiles = data["tilelayer"]
 				const overlaydata = data["overlay"]
-				const overlay = L.tileLayer (
-						overlaydata["url_template"],
-						{
-							opacity: overlay["opacity"]
-						});
+				const baseLayer = L.layerGroup([])
 				const osm = L.tileLayer(
 						tiles["url_template"],
 						{
@@ -113,6 +109,15 @@ fetch("layers.json")
 								attribution: tiles["attribution"]
 						}
 				);
+				baseLayer.addLayer(osm);
+				if (overlaydata) {
+						 const overlay = L.tileLayer (
+							overlaydata["url_template"],
+							{
+								opacity: overlaydata["opacity"]
+							})
+							baseLayer.addLayer(overlay)
+							};
 				const strecken = protomapsL.leafletLayer({
 						attribution: "",
 						url: data["pmtiles_url"] ?? "strecken.pmtiles",
@@ -120,7 +125,6 @@ fetch("layers.json")
 						maxZoom: 19,
 						paintRules: rules,	
 				});
-				baseLayer = L.layerGroup([osm, overlay]);
 				baseLayer.addTo(map);
 				legend.addTo(map);
 				strecken.addTo(map);
