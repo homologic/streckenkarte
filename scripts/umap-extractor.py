@@ -35,6 +35,7 @@ config = {}
 config["name"] = properties["name"]
 colors = {}
 config["layers"] = colors
+config["overlay"] = properties["overlay"]
 
 if "tilelayer" in properties and properties['tilelayer'] != {} :
     config["tilelayer"] = properties["tilelayer"]

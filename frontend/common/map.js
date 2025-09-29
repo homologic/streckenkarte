@@ -100,6 +100,12 @@ fetch("layers.json")
 						});
 				}
 				const tiles = data["tilelayer"]
+				const overlaydata = data["overlay"]
+				const overlay = L.tileLayer (
+						overlaydata["url_template"],
+						{
+							opacity: overlay["opacity"]
+						});
 				const osm = L.tileLayer(
 						tiles["url_template"],
 						{
@@ -114,7 +120,8 @@ fetch("layers.json")
 						maxZoom: 19,
 						paintRules: rules,	
 				});
-				osm.addTo(map);
+				baseLayer = L.layerGroup([osm, overlay]);
+				baseLayer.addTo(map);
 				legend.addTo(map);
 				strecken.addTo(map);
 				if ("points_url" in data) {
