@@ -110,7 +110,7 @@ fetch("layers.json")
 						}
 				);
 				baseLayer.addLayer(osm);
-				if (overlaydata) {
+				if (overlaydata["url_template"] != null) {
 						 const overlay = L.tileLayer (
 							overlaydata["url_template"],
 							{
