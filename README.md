@@ -21,7 +21,7 @@ metadata, and the web server should be configured to display
 `/common/index.html` when accessing `/$mapname/`. This can be achieved
 on nginx with the following snippet:
 
-```
+```Nginx
 location ~ /.+/$ {
 	rewrite ^/(.*)$ /common/index.html last; 
 }
