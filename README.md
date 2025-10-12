@@ -27,6 +27,17 @@ location ~ /.+/$ {
 }
 ```
 
+On caddy, the same can be achieved with the following Caddyfile:
+
+```Caddyfile
+host {
+	root * /var/www/html
+	encode
+	try_files {path} /common/index.html
+	file_server
+}
+```
+
 The `strecken.pmtiles` file is best generated using the
 `mapbuilder.sh` script. Furthermore, exporting maps from umap is
 possible using the `umap-extractor.py` script, which takes care of
