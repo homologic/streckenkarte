@@ -21,7 +21,7 @@ tippecanoe -aN -z"$zoom" -o "$temp/strecken.pmtiles" $temp/*.json
 if [ -f "$1/points.json" ]
 then
 	ogr2ogr -t_srs WGS84 "$temp/points.json" "$1/points.json"
-	tippecanoe -aN -z12 -r1 -o "$temp/points.pmtiles" "$temp/points.json"
+	tippecanoe -aN -z"$zoom" -r1 -o "$temp/points.pmtiles" "$temp/points.json"
 	jq '.points_url = "points.pmtiles"' "$1/layers.json" > "$2/layers.json"
 fi
 
