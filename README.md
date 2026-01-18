@@ -126,3 +126,74 @@ on the input file with excessive metadata.
 
 [brouter]: https://brouter.de/brouter-web/
 [osmexp]: https://github.com/homologic/osmexp
+
+## Hosting & Build Options
+Besides the manual build process, there are also options for automated builds and deployments.
+
+The following description is intended mainly as inspiration and starting point for your own setup.
+
+### Git/CI-based workflow with S3 hosting
+In this example, the streckenkarte is built in a CI-pipeline, while a webserver (e.g. S3-based like garage) is only tasked with delivering the static files.
+
+1. Set up a git repository, and add this repository as a submodule in the folder `homologic-streckenkarte`.
+2. Add your own map data in a folder `maps/{yourmapname}` (e.g. `maps/{yourmapname}/layers.json` and `maps/{yourmapname}/data/{layer}/42.gpx`).
+3. Create a CI workflow to build and deploy the map (this example is for Forgejo Actions, but can be adapted to other CI systems):
+```yaml
+name: streckenkarte deploy
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: codeberg.org/margau/buildenv-streckenkarte:latest
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: set up output directory
+        run: mkdir -p ./public/{yourmapname}
+      - name: deploy frontend to public
+        run: cp -r homologic-streckenkarte/frontend/* public/
+      - run: bash homologic-streckenkarte/scripts/mapbuilder.sh "maps/{yourmapname}/" public/{yourmapname}/
+      - run: cp maps/{yourmapname}/layers.json public/{yourmapname}/layers.json
+      - uses: https://code.forgejo.org/forgejo/upload-artifact
+        with:
+          path: public/
+          name: streckenkarte
+
+  publish:
+    runs-on: docker
+    needs: build
+    if: github.ref == format('refs/heads/{0}', 'main') || github.ref == 'main'
+    container:
+      image: codeberg.org/margau/buildenv-rclone:latest
+    steps:
+    - uses: https://code.forgejo.org/forgejo/download-artifact
+      with:
+        name: streckenkarte
+        path: public
+    - name: Upload S3
+      run: rclone copy public/ mys3:streckenkarte
+      env:
+        RCLONE_CONFIG_*
+```
+
+This example builds the map in the first step and saves the public files as build artifact.
+In the second stage, the public files are uploaded using RCLONE e.g. to an S3 bucket, from which it could be served as static website.
+Adjust as needed to fit your setup.
+
+The [codeberg.org/margau/buildenv-streckenkarte](https://codeberg.org/margau/-/packages/container/buildenv-streckenkarte/latest) container with every tool preinstalled is maintained [in a codeberg repo](https://codeberg.org/margau/buildenv/src/branch/main/streckenkarte)
+
+The following nginx location blocks might be useful:
+```
+  location ~ /.+/$ {
+    rewrite ^/(.*)$ /index.html last; 
+  }
+  location = / {
+    return 307 https://railmap.example.com/{yourmapname}/;
+  }
+```
