@@ -9,12 +9,23 @@ temp=$(mktemp -d)
 zoom=$(jq '.maxZoom // 10' "$1/layers.json")
 
 mkdir "$temp/data"
+IFS=$'\n'
+
 for i in "$1/data/"*
 do	
-	ogrmerge.py -single -o "$temp/$(basename $i).json"  "$i"/* 
+	layername=$(basename $i)
+	echo "Processing layer $layername"
+	mkdir "$temp/$layername"
+		
+	for file in $(find "$1/data/$layername" -type f ); 
+	do
+		echo "Processing file $(basename $file)"
+		cp "$file" "$temp/$layername/$(basename $file)"
+	done
+	
+	ogrmerge.py -single -o "$temp/$layername.json"  "$temp/$layername/"* 
+
 done
-
-
 
 tippecanoe -aN -z"$zoom" -o "$temp/strecken.pmtiles" $temp/*.json
 
