@@ -1,25 +1,41 @@
 # Streckenkarte
 
-A tool to display maps of lines as vector tiles using leaflet.
-
+A tool to generate vector tiles from input files (.gpx, .geojson or similar) and display them on top of another map using leaflet.
 
 ## Dependencies
-
 * Tippecanoe (requires version 2 or later)
 * ogrmerge (part of gdal-bin in Debian)
 * jq
 
 ## Usage
 
+### Displaying the webpage
 This software is meant to be installed as a hosted installation for
 several maps. This is done by putting the files in the `frontend`
 directory on a web server so they appear as `/common/*`, and then
 creating a directory for each map, with the maps appearing at
 `/$mapname/`. This directory should contain a `strecken.pmtiles`
 containing the vector tiles, as well as a `layers.json` containing
-metadata, and the web server should be configured to display
-`/common/index.html` when accessing `/$mapname/`. This can be achieved
-on nginx with the following snippet:
+metadata.
+
+Example folder structure for a website that hosts two maps:
+```
+map.example.com/
+├── index.html
+└── common
+    ├── map.js
+    ├── style.css
+├── map1
+    ├── layers.json
+    └── strecken.pmtiles
+└── map2
+    ├── layers.json
+    └── strecken.pmtiles
+```
+
+The web server should be configured to display
+`/common/index.html` when accessing `/$mapname/`. 
+This can be done on nginx with the following snippet:
 
 ```Nginx
 location ~ /.+/$ {
@@ -37,23 +53,43 @@ host {
 	file_server
 }
 ```
+### Creating the map tiles using mapbuilder.sh
 
 The `strecken.pmtiles` file is best generated using the
-`mapbuilder.sh` script. Furthermore, exporting maps from umap is
-possible using the `umap-extractor.py` script, which takes care of
-exporting the data as well as the graphical style for each layer. 
+`mapbuilder.sh` script by running
+
+```
+./mapbuilder.sh path/to/input/directory path/to/output/directory
+```
+
 
 A sample git `post-receive` hook is provided to build and deploy the
 map when the map data is pushed.
 
-### Input Data
+#### Input Data
 
-The input data for `strecken.pmtiles` consists of a `data/` folder,
+The input folder for `strecken.pmtiles` consists of a `data/` folder,
 with one subfolder for each layer. In each of these folders, the lines
 to be displayed on the map can be deposited in any format understood
 by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
 GeoJSON or gpx. The input data can be obtained from OpenStreetMap
 using tools such as [brouter][brouter] or [osmexp][osmexp].
+
+Example folder structure for a map that has the layers metro and mainline:
+```
+input
+├── layers.json
+└── data
+    ├── train
+        ├── lgv_est.geojson
+        └── ringbahn.geojson
+    └── tram
+        ├── kusttram.gpx
+        ├── Berlin_M8.gpx
+        └── Vienna_D.gpx
+```
+
+This file structure could for example be placed in a git repo to manage changes to the map.
 
 #### layers.json
 
@@ -92,6 +128,10 @@ maximum zoom level for which tiles should be rendered, increasing this
 value also increases the size of the `strecken.pmtiles` file. If not
 given explicitly `maxZoom` defaults to 10.
 
+### Extracting from umap
+Furthermore, exporting maps from umap is
+possible using the `umap-extractor.py` script, which takes care of
+exporting the data as well as the graphical style for each layer.
 
 ## Map Editing Mode
 
