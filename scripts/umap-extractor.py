@@ -9,10 +9,13 @@ import argparse
 parser = argparse.ArgumentParser(description='Export Umap maps for use with streckenkarte')
 parser.add_argument("URL", help="The map's URL")
 parser.add_argument("output_dir", help="Output directory")
+parser.add_argument("-s", "--separate", action='store_true', help="Separate output into different files")
 
 args = parser.parse_args()
 url = args.URL
 outdir = args.output_dir
+separate = args.separate
+
 
 base = url.split("/map/")[0]
 r = requests.get(url)
@@ -52,6 +55,9 @@ if not os.path.exists(outdir) :
     os.mkdir(outdir)
 if not os.path.exists(datadir) :
     os.mkdir(datadir)
+if separate:
+    if not os.path.exists(rawdir) :
+        os.mkdir(rawdir)
 
 for layer in layers :
     layer_id = layer["id"]
@@ -60,8 +66,26 @@ for layer in layers :
     nname = normalize_name(options['name'])
     if not os.path.exists(os.path.join(datadir,nname)) :
         os.mkdir(os.path.join(datadir,nname))
-    with open(os.path.join(datadir,nname,f"{nname}.json"), "w") as f :
-        f.write(req.text)
+    if separate:
+        with open(os.path.join(rawdir,f"{nname}.json"), "w") as f :
+            f.write(req.text)
+    else:
+        with open(os.path.join(datadir,nname,f"{nname}.json"), "w") as f :
+            f.write(req.text)
+         
+    #Store each path separately if requested via flag
+    if separate:
+        #Counter to name files if the feature does not have a name itself
+        counter = 0
+        for path in json.loads(req.text)["features"]:
+    	    #Check whether a name is given, else count up
+    	    if "name" in path["properties"]:
+    	        pname = path["properties"]["name"]
+    	    else:
+    	        pname = str(counter)
+    	    with open(os.path.join(datadir,nname,f"{pname}.json"), "w") as f :
+                f.write(json.dumps(path))
+            	
     colors[nname] = { "color" : options["color"] if "color" in options else "DarkGreen" , "humanname" : options["name"] }
     if "weight" in options :
         colors[nname]["width"] = options["weight"]
