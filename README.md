@@ -96,22 +96,6 @@ input
 
 This file structure could for example be placed in a git repo to manage changes to the map.
 
-Example folder structure for a map that has the layers metro and mainline:
-```
-input
-├── layers.json
-└── data
-    ├── train
-        ├── lgv_est.geojson
-        └── ringbahn.geojson
-    └── tram
-        ├── kusttram.gpx
-        ├── Berlin_M8.gpx
-        └── Vienna_D.gpx
-```
-
-This file structure could for example be placed in a git repo to manage changes to the map.
-
 #### layers.json
 
 The metadata for the layers to be rendered is given by the
