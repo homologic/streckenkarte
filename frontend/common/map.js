@@ -128,17 +128,56 @@ fetch("layers.json")
 				baseLayer.addTo(map);
 				legend.addTo(map);
 				strecken.addTo(map);
-				if ("points_url" in data) {
-						const points = protomapsL.leafletLayer({
-								attribution: "",
-								url: data["points_url"],
-								maxDataZoom: data["maxZoom"] ?? 10,
-								maxZoom: 19,
-								labelRules: pointRules,
-								paintRules: pointPaintRules,
-						});
-						points.addTo(map);
-				}
+// multiple points support
+Object.entries(data.layers).forEach(([key, layer]) => {
+    if (layer.type === "points") {
+        const points = protomapsL.leafletLayer({
+            attribution: "",
+            url: layer.url,            // your points.pmtiles file
+            maxDataZoom: data["maxZoom"] ?? 10,
+            maxZoom: 19,
+            paintRules: [
+                {
+                    dataLayer: layer.layer, 
+                    symbolizer: new protomapsL.CircleSymbolizer({
+                        radius: layer.radius ?? 3,
+                        fill: layer.color ?? 'black',
+                        stroke: layer.strokeColor ?? 'white',
+                        width: layer.strokeWidth ?? 1.5,
+                    }),
+                    filter: (z,f) => true
+                }
+            ],
+			labelRules: [
+    {
+        dataLayer: layer.layer,
+        symbolizer: new protomapsL.OffsetTextSymbolizer({
+            labelProps: ["name", "name_local", "name_lat"],
+            offsetX: 6,
+            offsetY: 4.5,
+            fill: 'black',
+            width: 2,
+            stroke: 'white',
+            lineHeight: 1.5,
+            letterSpacing: 1,
+            font: (z, f) => {
+                const size = protomapsL.linear([
+                    [3, 10],
+                    [10, 12],
+                ])(z);
+                return `400 ${size}px sans-serif`;
+            }
+        }),
+        filter: (z, f) => z >= 6
+    }
+]
+
+
+        });
+        points.addTo(map);
+    }
+});
+
 		})
 
 
@@ -463,6 +502,3 @@ window.addEventListener('resize', () => {
 
 window.addEventListener("hashchange", onHashChange);
 onHashChange();
-
-
-

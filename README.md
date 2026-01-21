@@ -106,7 +106,17 @@ is given below:
 	},
    	"layers": {
 		"tram": {"color": "red", "width": 1.5, "humanname": "Tram"},
-		"train": {"color": "blue", "width": 2, "humanname": "Train"}
+		"train": {"color": "blue", "width": 2, "humanname": "Train"},
+    "stations": {
+      "url": "points.pmtiles",
+      "layer": "stations",
+      "type": "points",
+      "color": "#0000FF",
+      "radius": 3,
+      "strokeColor": "#ffffff",
+      "strokeWidth": 1.5,
+      "humanname": "Stations"
+      }
 	},
 	"maxZoom": 12
 }
