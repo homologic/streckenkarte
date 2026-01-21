@@ -69,11 +69,11 @@ map when the map data is pushed.
 #### Input Data
 
 The input folder for `strecken.pmtiles` consists of a `data/` folder,
-with one subfolder for each layer. In each of these folders, the lines
+with one subfolder for each layer. In each of these layer folders the lines
 to be displayed on the map can be deposited in any format understood
 by [ogrmerge](https://gdal.org/programs/ogrmerge.html), for instance,
 GeoJSON or gpx. The input data can be obtained from OpenStreetMap
-using tools such as [brouter][brouter] or [osmexp][osmexp].
+using tools such as [brouter][brouter] or [osmexp][osmexp]. The input data can also be organized into further subfolders.
 
 Example folder structure for a map that has the layers metro and mainline:
 ```
@@ -81,12 +81,17 @@ input
 ├── layers.json
 └── data
     ├── train
-        ├── lgv_est.geojson
-        └── ringbahn.geojson
+    │  ├── lgv_est.geojson
+    │  └── ringbahn.geojson
     └── tram
-        ├── kusttram.gpx
-        ├── Berlin_M8.gpx
-        └── Vienna_D.gpx
+    	├── Berlin
+        │   ├── M5.gpx
+        │   └── M8.json
+        ├── Vienna
+        │   └──Vienna_D.gpx
+        └── kusttram.gpx
+        
+        
 ```
 
 This file structure could for example be placed in a git repo to manage changes to the map.
