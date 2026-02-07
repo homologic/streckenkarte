@@ -12,17 +12,18 @@ mkdir "$temp/data"
 IFS=$'\n'
 
 for i in "$1/data/"*
-do	
+do
 	layername=$(basename $i)
 	echo "Processing layer $layername"
 	mkdir "$temp/$layername"
-		
+
 	for file in $(find "$1/data/$layername" -type f ); 
 	do
 		echo "Processing file $(basename $file)"
-		cp "$file" "$temp/$layername/$(basename $file)"
+		hash=$(sha256sum "$file" | cut -f 1 -d " ")
+		cp "$file" "$temp/$layername/$hash"
 	done
-	
+
 	ogrmerge.py -single -o "$temp/$layername.json"  "$temp/$layername/"* 
 
 done
