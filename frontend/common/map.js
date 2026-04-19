@@ -388,8 +388,13 @@ async function pickDirectory(e){
 				}
 				let dat = {type: "FeatureCollection", features: geojsons};
 				if (editFilename != undefined && mapJSONs[editFilename]) {
-						dat = mapJSONs[editFilename]
-						dat.features = dat.features.concat(geojsons)
+						let mapJSON = mapJSONs[editFilename]
+						if (mapJSON.type == 'Feature') {
+								geojsons.push(mapJSON)
+						} else {
+								dat = mapJSON
+								dat.features = dat.features.concat(geojsons)
+						}
 				}
 				let file;
 				let deffilename

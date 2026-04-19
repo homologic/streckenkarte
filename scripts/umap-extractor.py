@@ -78,12 +78,16 @@ for layer in layers :
         #Counter to name files if the feature does not have a name itself
         counter = 0
         for path in json.loads(req.text)["features"]:
-    	    #Check whether a name is given, else count up
-    	    if "name" in path["properties"]:
-    	        pname = path["properties"]["name"]
-    	    else:
-    	        pname = str(counter)
-    	    with open(os.path.join(datadir,nname,f"{pname}.json"), "w") as f :
+            #Check whether a name is given, else count up
+            if "name" in path["properties"]:
+                pname = path["properties"]["name"]
+            else:
+                pname = str(counter)
+            if "messages" in path["properties"]:
+    	        del path["properties"]["messages"]
+            if "times" in path["properties"] :
+                del path["properties"]["times"] # remove brouter clutter
+            with open(os.path.join(datadir,nname,f"{pname}.json"), "w") as f :
                 f.write(json.dumps(path))
             	
     colors[nname] = { "color" : options["color"] if "color" in options else "DarkGreen" , "humanname" : options["name"] }
