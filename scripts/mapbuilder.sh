@@ -21,7 +21,8 @@ do
 	do
 		echo "Processing file $(basename $file)"
 		hash=$(sha256sum "$file" | cut -f 1 -d " ")
-		cp "$file" "$temp/$layername/$hash"
+		ext=${file##*.}
+		cp "$file" "$temp/$layername/$hash.$ext"
 	done
 
 	ogrmerge.py -single -o "$temp/$layername.json"  "$temp/$layername/"* 
